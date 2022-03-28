@@ -1,6 +1,6 @@
 #include <iostream>
 #include <thread>               //thread library
-#include <mutex>                //mengatur penggunaan sebuah resource.
+#include <mutex>                //mengatur penggunaan sebuah resource
 #include <condition_variable>   //menentukan kondisi tertentu
 #include <chrono>               //memastikan waktu dan tanggal
 
@@ -8,7 +8,7 @@ using namespace std;
 
 mutex mu;                   //mutex berfungsi melindungi variabel/data tidak diakses bersamaan oleh banyak thread
 condition_variable cond;    //deklarasi variabel yang akan dibawa ke void condition_variable cond;
-int coun = 1;               //deklarasi variabel angka dan inisialisasi variabel dengan input 1 
+int coun = 1;               //deklarasi variabel coun dan inisialisasi variabel dengan input 1 
 
 
 
@@ -16,13 +16,13 @@ void PrintOdd()         //fungsi untuk Print Odd Number
 {
     for (; coun < 10;)  //perulangan sampai ke 10
     {
-        unique_lock<mutex> locker(mu);                          //unique_lock sebuah objek yang mengelola object atau data dari mutex
-        cond.wait(locker, []() { return (coun % 2 == 1); });    //ketika variabel Kondis memeriksa penuh atau tidaknya, maka akan ada jeda/menunggu untuk manageObject mengelola data, jika sudah maka akan mereturn hasil loopingan dari inputan variabel angka yaitu 1  mod 2 sama dengan 1
-        this_thread::sleep_for(chrono::seconds(1));             //untuk memberikan efek delay sebanyak 1 detik 
-        cout << "From Odd:    " << coun << endl;                //untuk outputan Odd Thread sesuai angka yang telah dilooping
-        coun++;                                                 //terus bertambah apabila outputan nilai sesuai dengan aturan looping
-        locker.unlock();                                        //pengelolaan data akan terbuka, siap menjadi output
-        cond.notify_all();                                      //variabel khusus yang mengecek penuh atau tidak, juga dipakai untuk melancarkan output dari manageObj yang telah ter-unlock sehingga seluruh output dapat tertampilkan 
+        unique_lock<mutex> locker(mu);                          //unique_lock sebuah objek yang mengelola object mutex dengan kepemilikan unik (mutex is locked)
+        cond.wait(locker, []() { return (coun % 2 == 1); });    //block thread sampai mereturn hasil yang sesuai looping
+        this_thread::sleep_for(chrono::seconds(1));             //memberikan delay sebanyak 1 detik 
+        cout << "From Odd:    " << coun << endl;                //untuk outputan Odd Thread sesuai coun yang telah dilooping
+        coun++;                                                 //terus bertambah ketika output memenuhi aturan looping
+        locker.unlock();                                        //unlock the mutex 
+        cond.notify_all();                                      //Unblock semua thread yang menunggu di kondisi ini
     }
 }
 
@@ -33,8 +33,8 @@ void PrintEven()        //fungsi untuk Print Even Number
     {
         unique_lock<mutex> locker(mu);
         cond.wait(locker, []() { return (coun % 2 == 0); });
-        this_thread::sleep_for(chrono::duration<float>(2.5));
-        cout << "From Even: " << coun << std::endl;
+        this_thread::sleep_for(chrono::duration<float>(2.5));   //karena 2.5 bertipe data double maka menggunakan duration<double>
+        cout << "From Even: " << coun << std::endl;             
         coun++;
         locker.unlock();
         cond.notify_all();
@@ -45,10 +45,10 @@ void PrintEven()        //fungsi untuk Print Even Number
 int main()
 {
 
-    thread t1(PrintOdd);
-    thread t2(PrintEven);
+    thread t1(PrintOdd);    //memanggil fungsi Odd
+    thread t2(PrintEven);   //memanggil fungsi Even
 
-    t1.join();
+    t1.join(); //method yang membuat menunggu thread untuk menyelesaikan eksekusi
     t2.join();
     return 0;
 }
